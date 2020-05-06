@@ -1,0 +1,39 @@
+# This code depends on having the color functions available.
+source colors.sh
+
+
+prefix () {
+    if [[ -z "$LOG_PREFIX" ]]; then return; fi
+    grey "[$LOG_PREFIX] "
+}
+
+info () {
+    prefix
+    blue "[INFO] "
+    echo "$*"
+}
+
+
+warn () {
+    prefix
+    yellow "[WARN] "
+    echo "$*"
+}
+
+
+error () {
+    prefix
+    red "[ERROR] "
+    echo "$*"
+    _cleanup
+    exit 1
+}
+
+
+debug () {
+    if [[ -z "$LOG_DEBUG" ]]; then return; fi
+    prefix
+    cyan "[DEBUG] "
+    echo "$*"
+}
+
