@@ -2,6 +2,10 @@
 source colors.sh
 
 
+############################
+# Colorful logging functions
+
+
 prefix () {
     if [[ -z "$LOG_PREFIX" ]]; then return; fi
     grey "[$LOG_PREFIX] "
