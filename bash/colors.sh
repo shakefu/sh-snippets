@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 red () { printf "\033[1;31m%s\033[0m" "$*"; }
 yellow () { printf "\033[1;33m%s\033[0m" "$*"; }
 pink () { printf "\033[1;35m%s\033[0m" "$*"; }
