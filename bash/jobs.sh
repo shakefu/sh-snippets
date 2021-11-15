@@ -45,9 +45,9 @@ function log_job {
     local result
 
     name=$(colorize "$name")
-    if command -v unbuffer &>/dev/null; then
+    if command -v stdbuf &>/dev/null; then
         # This will print line by line, unbuffered, output prefixed with the colorized [name]
-        unbuffer "$cmd" 2>&1 | awk -v name="$name" '{print "\033[0m["name"]", $0}'
+        stdbuf -oL -eL "$cmd" 2>&1 | awk -v name="$name" '{print "\033[0m["name"]", $0}'
         result=$?
     else
         out=$("$cmd" 2>&1)
