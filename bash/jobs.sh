@@ -35,14 +35,18 @@ function log_job {
     local cmd="$*"
     local out
     # Use this for full debug output
-    # out="$(set -x && $cmd 2>&1)"
-    out="$($cmd 2>&1)"
+    if [ -n "$DEBUG" ]; then
+        $log "Debug enabled"
+        out="$(set -x && $cmd 2>&1)"
+    else
+        out="$($cmd 2>&1)"
+    fi
     local result=$?
     if [ -n "$out" ]; then
         # The log output from the sub-job should have its own logger, so this
         # just prints whatever we get
         # TODO: Make the logger smarter so it doesn't duplicate print the [name]
-        printf "%s" "$out\n"
+        printf "%s\n" "$out"
     fi
     if [ $result -ne 0 ]; then
         sleep 1  # This helps the logging not bunch up on a single line
@@ -61,6 +65,8 @@ function wait_for_jobs {
     # Disable xtrace output, quit on errors
     if [ -z "$DEBUG" ]; then
         { local -; set +x; set -e; } 2>/dev/null
+    else
+        $log "Debug enabled"
     fi
     while true; do
         local exited
