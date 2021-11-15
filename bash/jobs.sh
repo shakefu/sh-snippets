@@ -2,8 +2,7 @@
 # Give a terminal hint so we don't get a ton of error messages
 export TERM="${TERM:-xterm-256color}"
 
-# Colored logger for outputting multiline messages with log name prefixes
-function logger {
+function colorize {
     # Disable xtrace output, quit on errors
     { local -; set +x; set -e; } 2>/dev/null
     local name="$1"; shift
@@ -20,9 +19,18 @@ function logger {
         # the ANSI Regular or Bold flags
         # shellcheck disable=1083
         bold=$(echo "$name" | cksum | awk {'print $1 % 2'} | bc)
-        name=$(printf "\033[0m\033[$bold;${color}m%s\033[0m" "$name")
+        name=$(printf "\033[$bold;${color}m%s\033[0m" "$name")
     fi
-    printf "[%s] %s\n" "$name" "${*//$'\n'/$'\n'[$name] }"
+    printf "%s" "$name"
+}
+
+# Colored logger for outputting multiline messages with log name prefixes
+function logger {
+    # Disable xtrace output, quit on errors
+    { local -; set +x; set -e; } 2>/dev/null
+    local name="$1"; shift
+    name=$(colorize "$name")
+    printf "\033[0m[%s] %s\n" "$name" "${*//$'\n'/$'\n'[$name] }"
 }
 export -f logger
 
@@ -34,19 +42,18 @@ function log_job {
     local log="logger $name"
     local cmd="$*"
     local out
-    # Use this for full debug output
-    if [ -n "$DEBUG" ]; then
-        $log "Debug enabled"
-        out="$(set -x && $cmd 2>&1)"
+    local result
+
+    name=$(colorize "$name")
+    if command -v unbuffer &>/dev/null; then
+        # This will print line by line, unbuffered, output prefixed with the colorized [name]
+        unbuffer "$cmd" 2>&1 | awk -v name="$name" '{print "["name"]", $0}'
+        result=$?
     else
-        out="$($cmd 2>&1)"
-    fi
-    local result=$?
-    if [ -n "$out" ]; then
-        # The log output from the sub-job should have its own logger, so this
-        # just prints whatever we get
-        # TODO: Make the logger smarter so it doesn't duplicate print the [name]
-        printf "%s\n" "$out"
+        out=$("$cmd" 2>&1)
+        result=$?
+        # This will print the entire command output in one go, prefixing each line with [name]
+        [ -n "$out" ] && printf "%s\n" "$out" | awk -v name="$name" '{print "["name"]", $0}'
     fi
     if [ $result -ne 0 ]; then
         sleep 1  # This helps the logging not bunch up on a single line
@@ -62,8 +69,8 @@ export -f log_job
 # $ wait_for_jobs; exit $?
 function wait_for_jobs {
     local log="logger wait_for_jobs"
-    # Disable xtrace output
     if [ -z "$DEBUG" ]; then
+        # Disable xtrace output
         { local -; set +x; } 2>/dev/null
     else
         $log "Debug enabled"
