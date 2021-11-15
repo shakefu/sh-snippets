@@ -42,7 +42,7 @@ function log_job {
         # The log output from the sub-job should have its own logger, so this
         # just prints whatever we get
         # TODO: Make the logger smarter so it doesn't duplicate print the [name]
-        printf "%s" "$out"
+        printf "%s" "$out\n"
     fi
     if [ $result -ne 0 ]; then
         sleep 1  # This helps the logging not bunch up on a single line
@@ -57,8 +57,11 @@ export -f log_job
 # first one that errors, killing the rest
 # $ wait_for_jobs; exit $?
 function wait_for_jobs {
+    local log="logger wait_for_jobs"
     # Disable xtrace output, quit on errors
-    { local -; set +x; set -e; } 2>/dev/null
+    if [ -z "$DEBUG" ]; then
+        { local -; set +x; set -e; } 2>/dev/null
+    fi
     while true; do
         local exited
         # Get the output of the jobs command into $exited without invoking a subshell
@@ -66,10 +69,14 @@ function wait_for_jobs {
         # Parse the jobs output looking for "Exit" and the exit code
         exited=$(echo "$exited" | grep -o 'Exit [0-9]\+' | head -n1 | awk '{print $2}')
         if [ -n "$exited" ]; then
+            echo
+            $log "Found exited job"
             if [ "$exited" -ne 0 ]; then
+                $log "Exited job had error: $exited"
                 # Try to kill any remaining jobs if they're still running
                 # shellcheck disable=SC2046
                 if [ "$(jobs -p | wc -l)" -ne 0 ]; then
+                    $log "Killing remaining jobs"
                     kill $(jobs -p) || true
                     wait
                 fi
@@ -81,11 +88,13 @@ function wait_for_jobs {
         # Check if we still have background jobs running
         if [ "$(jobs -p | wc -l)" -eq 0 ]; then
             echo
-            echo "Done"
+            $log "Done"
             break
         fi
         # Wait a second for the next check
         sleep 1
     done
+    $log "Success"
+    return 0
 }
 export -f wait_for_jobs
