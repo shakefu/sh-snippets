@@ -43,6 +43,7 @@ function log_job {
     local cmd="$*"
     local out
     local result
+    { local -; set -o pipefail; } 2>/dev/null
 
     name=$(colorize "$name")
     if command -v stdbuf &>/dev/null; then
