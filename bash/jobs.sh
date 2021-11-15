@@ -62,9 +62,9 @@ export -f log_job
 # $ wait_for_jobs; exit $?
 function wait_for_jobs {
     local log="logger wait_for_jobs"
-    # Disable xtrace output, quit on errors
+    # Disable xtrace output
     if [ -z "$DEBUG" ]; then
-        { local -; set +x; set -e; } 2>/dev/null
+        { local -; set +x; } 2>/dev/null
     else
         $log "Debug enabled"
     fi
