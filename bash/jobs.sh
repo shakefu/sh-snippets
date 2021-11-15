@@ -47,13 +47,13 @@ function log_job {
     name=$(colorize "$name")
     if command -v unbuffer &>/dev/null; then
         # This will print line by line, unbuffered, output prefixed with the colorized [name]
-        unbuffer "$cmd" 2>&1 | awk -v name="$name" '{print "["name"]", $0}'
+        unbuffer "$cmd" 2>&1 | awk -v name="$name" '{print "\033[0m["name"]", $0}'
         result=$?
     else
         out=$("$cmd" 2>&1)
         result=$?
         # This will print the entire command output in one go, prefixing each line with [name]
-        [ -n "$out" ] && printf "%s\n" "$out" | awk -v name="$name" '{print "["name"]", $0}'
+        [ -n "$out" ] && printf "%s\n" "$out" | awk -v name="$name" '{print "\033[0m["name"]", $0}'
     fi
     if [ $result -ne 0 ]; then
         sleep 1  # This helps the logging not bunch up on a single line
