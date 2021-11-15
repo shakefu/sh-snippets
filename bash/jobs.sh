@@ -46,18 +46,10 @@ function log_job {
     { local -; set -o pipefail; } 2>/dev/null
 
     name=$(colorize "$name")
-    if command -v stdbuf &>/dev/null; then
-        # Export our function to the environment if we have stdbuf
-        [ "$(type -t "${cmd%% *}")" == "function" ] && export -f "${cmd%% *}"
-        # This will print line by line, unbuffered, output prefixed with the colorized [name]
-        stdbuf -oL -eL "$cmd" 2>&1 | awk -v name="$name" '{print "\033[0m["name"]", $0}'
-        result=$?
-    else
-        out=$("$cmd" 2>&1)
-        result=$?
-        # This will print the entire command output in one go, prefixing each line with [name]
-        [ -n "$out" ] && printf "%s\n" "$out" | awk -v name="$name" '{print "\033[0m["name"]", $0}'
-    fi
+    out=$("$cmd" 2>&1)
+    result=$?
+    # This will print the entire command output in one go, prefixing each line with [name]
+    [ -n "$out" ] && printf "%s\n" "$out" | awk -v name="$name" '{print "\033[0m["name"]", $0}'
     if [ $result -ne 0 ]; then
         sleep 1  # This helps the logging not bunch up on a single line
         $log "Command exited with non-zero exit code: $result"
