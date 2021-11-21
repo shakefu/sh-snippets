@@ -11,11 +11,10 @@ function colorize {
         # Generate colors from hashing the name
         local bold
         local color
-        local reset
 
         # We use awk & bc to mod the checksum of the name into a color range...
         # this is uh... interesting at best, but it works.
-        reset='\033[0m'
+
         # tput is fussy af so ... force color when it is
         color="$(tput colors 2>/dev/null || echo 256)"
         if [[ $color == "256" ]]; then
@@ -30,10 +29,9 @@ function colorize {
             color=$(printf '\033[%sm' "$bold;$color")
         else
             color=""
-            reset=""
         fi
         # This always prints a reset, but it's harmless
-        name=$(printf "%s%s%s" "$color" "$name" "$reset")
+        name=$(printf "%s\033[0m" "$color$name")
     fi
     printf "%s" "$name"
 }
