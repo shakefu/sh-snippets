@@ -15,19 +15,19 @@ function colorize {
 
         # We use awk & bc to mod the checksum of the name into a color range...
         # this is uh... interesting at best, but it works.
-        reset="\033[0m"
+        reset='\033[0m'
         # tput is fussy af so ... force color when it is
-        color="$(tput colors || echo 256)"
+        color="$(tput colors 2>/dev/null || echo 256)"
         if [[ $color == "256" ]]; then
             # shellcheck disable=1083
             color=$(echo "$name" | cksum | awk {'print $1 % 211 + 20'} | bc)
-            color=$(printf "\033[38;5;%sm" "$color")
+            color=$(printf '\033[38;5;%sm' "$color")
         elif [[ $color == "16" ]]; then
             # shellcheck disable=1083
             color=$(echo "$name" | cksum | awk {'print $1 % 8 + 30'} | bc)
             # shellcheck disable=1083
             bold=$(echo "$name" | cksum | awk {'print $1 % 2'} | bc)
-            color=$(printf "\033[%sm" "${bold};$color")
+            color=$(printf '\033[%sm' "$bold;$color")
         else
             color=""
             reset=""
