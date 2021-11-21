@@ -16,7 +16,8 @@ function colorize {
         # We use awk & bc to mod the checksum of the name into a color range...
         # this is uh... interesting at best, but it works.
         reset="\033[0m"
-        color="$(tput colors)"
+        # tput is fussy af so ... force color when it is
+        color="$(tput colors || echo 256)"
         if [[ $color == "256" ]]; then
             # shellcheck disable=1083
             color=$(echo "$name" | cksum | awk {'print $1 % 211 + 20'} | bc)
