@@ -11,15 +11,28 @@ function colorize {
         # Generate colors from hashing the name
         local bold
         local color
-        # This command hashes the logger name into a number between 30 and 37
-        # (inclusive), which corresponds to the ANSI colors
-        # shellcheck disable=1083
-        color=$(echo "$name" | cksum | awk {'print $1 % 8 + 30'} | bc)
-        # This command hashes the logger name into 0 or 1, which corresponds to
-        # the ANSI Regular or Bold flags
-        # shellcheck disable=1083
-        bold=$(echo "$name" | cksum | awk {'print $1 % 2'} | bc)
-        name=$(printf "\033[$bold;${color}m%s\033[0m" "$name")
+        local reset
+
+        # We use awk & bc to mod the checksum of the name into a color range...
+        # this is uh... interesting at best, but it works.
+        reset="\033[0m"
+        color="$(tput colors)"
+        if [[ $color == "256" ]]; then
+            # shellcheck disable=1083
+            color=$(echo "$name" | cksum | awk {'print $1 % 211 + 20'} | bc)
+            color=$(printf "\033[38;5;%sm" "$color")
+        elif [[ $color == "16" ]]; then
+            # shellcheck disable=1083
+            color=$(echo "$name" | cksum | awk {'print $1 % 8 + 30'} | bc)
+            # shellcheck disable=1083
+            bold=$(echo "$name" | cksum | awk {'print $1 % 2'} | bc)
+            color=$(printf "\033[%sm" "${bold};$color")
+        else
+            color=""
+            reset=""
+        fi
+        # This always prints a reset, but it's harmless
+        name=$(printf "%s%s%s" "$color" "$name" "$reset")
     fi
     printf "%s" "$name"
 }
