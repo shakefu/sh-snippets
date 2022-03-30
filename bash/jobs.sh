@@ -58,13 +58,13 @@ export -f logger
 function log_job {
     local name="$1"; shift
     local log="logger $name"
-    local cmd="$*"
+    local cmd="$@"
     local out
     local result
     { local -; set -o pipefail; } 2>/dev/null
 
     name=$(colorize "$name")
-    out=$("$cmd" 2>&1)
+    out=$($cmd 2>&1)
     result=$?
     # This will print the entire command output in one go, prefixing each line with [name]
     [ -n "$out" ] && printf "%s\n" "$out" | awk -v name="$name" '{print "\033[0m["name"]", $0}'
