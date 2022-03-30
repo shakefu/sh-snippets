@@ -6,8 +6,13 @@ function colorize {
     # Disable xtrace output, quit on errors
     { local -; set +x; set -e; } 2>/dev/null
     local name="$1"; shift
+    local nocolor
+    command -v echo >/dev/null || nocolor=1
+    command -v cksum >/dev/null || nocolor=1
+    command -v awk >/dev/null || nocolor=1
+    command -v bc >/dev/null || nocolor=1
     # Check we have commands needed for colors
-    if command -v echo cksum awk bc &>/dev/null; then
+    if [[ -z "$nocolor" ]]; then
         # Generate colors from hashing the name
         local bold
         local color
@@ -35,6 +40,7 @@ function colorize {
     fi
     printf "%s" "$name"
 }
+export -f colorize
 
 # Colored logger for outputting multiline messages with log name prefixes
 function logger {
@@ -118,3 +124,8 @@ function wait_for_jobs {
     return 0
 }
 export -f wait_for_jobs
+
+command -v echo >/dev/null || echo "Missing required command: echo"
+command -v cksum >/dev/null || echo "Missing required command: cksum"
+command -v awk >/dev/null || echo "Missing required command: awk"
+command -v bc >/dev/null || echo "Missing required command: bc"
