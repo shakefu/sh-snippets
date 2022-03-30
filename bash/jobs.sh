@@ -64,7 +64,7 @@ function log_job {
     { local -; set -o pipefail; } 2>/dev/null
 
     name=$(colorize "$name")
-    out=$($cmd 2>&1)
+    out=$(exec "$@" 2>&1)
     result=$?
     # This will print the entire command output in one go, prefixing each line with [name]
     [ -n "$out" ] && printf "%s\n" "$out" | awk -v name="$name" '{print "\033[0m["name"]", $0}'
