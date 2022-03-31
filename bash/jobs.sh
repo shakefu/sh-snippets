@@ -61,7 +61,7 @@ function log_job {
     local cmd="$@"
     local out
     local result
-    { local -; set -o pipefail; set +e; set +x } 2>/dev/null
+    { local -; set -o pipefail; set +e; set +x; } 2>/dev/null
 
     name=$(colorize "$name")
     out=$("$@" 2>&1)
