@@ -58,7 +58,6 @@ export -f logger
 function log_job {
     local name="$1"; shift
     local log="logger $name"
-    local cmd="$@"
     local out
     local result
     { local -; set -o pipefail; set +e; set +x; } 2>/dev/null
