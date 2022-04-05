@@ -65,11 +65,18 @@ function log_job {
     name=$(colorize "$name")
     out=$("$@" 2>&1)
     result=$?
-    # This will print the entire command output in one go, prefixing each line with [name]
-    [ -n "$out" ] && printf "%s\n" "$out" | awk -v name="$name" '{print "\033[0m["name"]", $0}'
+
+    red () { printf "\033[1;31m%s\033[0m" "$*"; }
+
     if [ $result -ne 0 ]; then
+        # This will print the entire command output in one go, prefixing each line with [name]
+        [ -n "$out" ] && printf "%s\n" "$out" | awk -v name="$name" '{print "\033[0m["name"]\033[1;31m", $0, "\033[0m"}'
+
         sleep 1  # This helps the logging not bunch up on a single line
         $log "Command exited with non-zero exit code: $result"
+    else
+        # This will print the entire command output in one go, prefixing each line with [name]
+        [ -n "$out" ] && printf "%s\n" "$out" | awk -v name="$name" '{print "\033[0m["name"]", $0}'
     fi
     return $result
 }
